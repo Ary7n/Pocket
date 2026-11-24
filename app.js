@@ -1075,7 +1075,19 @@ function maybeMonthStart() {
   if (prev >= S.settings.startMonth) openRecap(prev, () => openNewMonth(now));
 }
 function afterUnlock() { render(); maybeMonthStart(); checkNewBadges(); }
+function fitScreen() {
+  // iPhone home-screen apps that draw under the Dynamic Island can report a screen that is too short.
+  // Measure the missing strip and let the layout stretch over it.
+  let g = 0;
+  if (window.navigator.standalone === true) {
+    const full = Math.max(screen.height, screen.width) > innerHeight && innerWidth < innerHeight ? Math.max(screen.height, screen.width) : innerHeight;
+    g = Math.max(0, Math.round(full - innerHeight));
+    if (g > 140) g = 0;
+  }
+  document.documentElement.style.setProperty('--gap', g + 'px');
+}
 function start() {
+  fitScreen(); addEventListener('resize', fitScreen); addEventListener('orientationchange', () => setTimeout(fitScreen, 300));
   load(); render();
   if (S.setup && S.settings.pin) { pinMode = 'unlock'; pinBuf = ''; drawPin(); }
   else if (S.setup) { maybeMonthStart(); checkNewBadges(); }
