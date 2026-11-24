@@ -388,7 +388,7 @@ function applyLook() {
    ========================================================= */
 let view = 'home'; let lastView = '';
 let calSel = null; let calYM = null; let repYM = null;
-function go(v) { view = v; window.scrollTo(0, 0); render(); }
+function go(v) { view = v; render(); const ap = document.getElementById('app'); if (ap) ap.scrollTop = 0; }
 function render() {
   invalidate(); applyLook();
   const app = document.getElementById('app');
@@ -715,6 +715,7 @@ function vTiles() {
    ========================================================= */
 function openSheet(html, opts) {
   opts = opts || {};
+  document.getElementById('toast').classList.remove('show');
   const root = document.getElementById('sheet-root');
   root.innerHTML = (opts.full ? '' : '<div class="sheet-bg" data-act="close"></div>') + `<div class="sheet ${opts.full ? 'full' : ''}" role="dialog" aria-modal="true" aria-label="${opts.label || 'Panel'}">${opts.full ? '' : '<div class="grab"></div>'}${html}</div>`;
   document.body.style.overflow = 'hidden';
@@ -1080,9 +1081,14 @@ function maybeMonthStart() {
 }
 function afterUnlock() { render(); maybeMonthStart(); checkNewBadges(); }
 function fitScreen() {
-  // iPhone home-screen apps drawn under the Dynamic Island place fixed layers too high by the status-bar height.
-  // The ios-app class shifts the wallpaper, menu bar and panels back into place (see --gap in style.css).
-  document.documentElement.classList.toggle('ios-app', window.navigator.standalone === true);
+  // The whole app lives in one box exactly the size of the phone screen (no fixed layers),
+  // so on iPhone home-screen apps it covers everything, including behind the Dynamic Island.
+  let h = window.innerHeight;
+  if (window.navigator.standalone === true) {
+    const portrait = window.innerHeight >= window.innerWidth;
+    h = portrait ? Math.max(screen.height, screen.width) : Math.min(screen.height, screen.width);
+  }
+  document.documentElement.style.setProperty('--appH', h + 'px');
 }
 function sizeAmount(el) { if (el) el.style.width = Math.max(1, (el.value || el.placeholder || '0').length) * 0.62 + 0.25 + 'em'; }
 function start() {

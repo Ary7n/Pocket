@@ -1,6 +1,6 @@
 /* Pocket offline helper: keeps the app working without internet.
    When you update the app, change VERSION so phones pick up the new files. */
-const VERSION = 'pocket-v5';
+const VERSION = 'pocket-v6';
 const FILES = ['./', 'index.html', 'style.css', 'app.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
