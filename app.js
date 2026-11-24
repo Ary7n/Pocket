@@ -746,7 +746,7 @@ function drawAdd() {
     <div class="seg glass">${[['spent', 'Spent'], ['in', 'From home'], ['refund', 'Refund']].map(([v, l]) => `<button class="${d.type === v ? 'on' : ''}" data-act="dtype" data-v="${v}" aria-pressed="${d.type === v}">${l}</button>`).join('')}</div>
     <div class="col" style="align-items:center;gap:6px">
       <label for="amt" class="small muted">${isIn ? 'Money received from home' : d.type === 'refund' ? 'Money coming back to you' : 'How much?'}</label>
-      <div class="row" style="justify-content:center;gap:0;width:100%"><span style="font-size:44px;font-weight:800;opacity:.7">$</span><input id="amt" class="amount-in" inputmode="decimal" placeholder="0" value="${esc(d.amount)}" data-draft="amount" autocomplete="off" style="width:70%" autofocus></div>
+      <div class="row" style="justify-content:center;gap:0;width:100%"><span style="font-size:52px;font-weight:800;opacity:.75;margin-right:2px">$</span><input id="amt" class="amount-in" inputmode="decimal" placeholder="0" value="${esc(d.amount)}" data-draft="amount" autocomplete="off" autofocus></div>
       ${fundNote}
     </div>
     ${isIn ? '' : `<div class="catgrid">${CATS.map(c => `<button class="cattile ${d.cat === c.id ? 'on' : ''}" data-act="dcat" data-v="${c.id}" aria-pressed="${d.cat === c.id}"><span style="color:${d.cat === c.id ? 'inherit' : catColor(c)}">${svg(c.id)}</span>${c.name}</button>`).join('')}</div>`}
@@ -762,6 +762,7 @@ function drawAdd() {
   const root = document.getElementById('sheet-root');
   if (root.querySelector('.sheet') && !root.querySelector('.sheet.full')) { const sh = root.querySelector('.sheet'); const y = sh.scrollTop; sh.innerHTML = '<div class="grab"></div>' + html; sh.scrollTop = y; }
   else openSheet(html, { label: 'Add an entry' });
+  sizeAmount(document.getElementById('amt'));
 }
 function fundNoteText() {
   const d = draft; if (!d || d.type !== 'spent' || d.cat !== 'grocery' || d.editing) return '';
@@ -811,7 +812,7 @@ function affVerdict() {
 function drawAfford() {
   const verdict = affVerdict();
   const html = `<div class="between"><button class="iconbtn" data-act="close" aria-label="Close">${svg('close')}</button><b>Can I afford it?</b><span style="width:44px"></span></div>
-    <div class="col" style="align-items:center;gap:4px"><div class="row" style="justify-content:center;gap:0;width:100%"><span style="font-size:44px;font-weight:800;opacity:.7">$</span><input id="aamt" class="amount-in" inputmode="decimal" placeholder="0" value="${esc(aff.amount)}" data-aff="amount" style="width:70%" aria-label="Price" autofocus></div>
+    <div class="col" style="align-items:center;gap:4px"><div class="row" style="justify-content:center;gap:0;width:100%"><span style="font-size:52px;font-weight:800;opacity:.75;margin-right:2px">$</span><input id="aamt" class="amount-in" inputmode="decimal" placeholder="0" value="${esc(aff.amount)}" data-aff="amount" aria-label="Price" autofocus></div>
     <input data-aff="what" value="${esc(aff.what)}" placeholder="What is it? (optional)" style="border:0;background:transparent;text-align:center;font-size:15px;outline:none;color:var(--text);min-height:44px" maxlength="40" aria-label="What is it"></div>
     <div class="glass field"><div class="frow"><span class="col" style="flex:1"><span>Split with a friend</span><span class="small muted">${aff.split ? 'You pay half' : 'You pay the full amount'}</span></span><button class="switch ${aff.split ? 'on' : ''}" role="switch" aria-checked="${aff.split}" aria-label="Split with a friend" data-act="asplit"></button></div></div>
     <div id="aff-result">${verdict}</div>
@@ -819,6 +820,7 @@ function drawAfford() {
   const root = document.getElementById('sheet-root');
   if (root.querySelector('.sheet')) { root.querySelector('.sheet').innerHTML = '<div class="grab"></div>' + html; }
   else openSheet(html, { label: 'Can I afford it' });
+  sizeAmount(document.getElementById('aamt'));
 }
 
 /* ---------- Month note, goal, challenges, PIN ---------- */
@@ -836,8 +838,9 @@ function openMoveGoal(dir) {
   const M = month(curYM()); const max = dir > 0 ? M.fundNow : S.goal.saved;
   openSheet(`<div class="between"><button class="iconbtn" data-act="close" aria-label="Close">${svg('close')}</button><b>${dir > 0 ? 'Add to ' + esc(S.goal.name) : 'Use goal savings'}</b><span style="width:44px"></span></div>
     <p class="small muted" style="margin:0;text-align:center">${dir > 0 ? 'Moves money from your Grocery Fund (' + $m(max) + ' available).' : 'Moves money back to your Grocery Fund (' + $m(max) + ' saved).'}</p>
-    <div class="row" style="justify-content:center;gap:0"><span style="font-size:44px;font-weight:800;opacity:.7">$</span><input id="mv-amt" class="amount-in" inputmode="decimal" placeholder="0" style="width:70%" aria-label="Amount" autofocus></div>
+    <div class="row" style="justify-content:center;gap:0"><span style="font-size:52px;font-weight:800;opacity:.75;margin-right:2px">$</span><input id="mv-amt" class="amount-in" inputmode="decimal" placeholder="0" aria-label="Amount" autofocus></div>
     <button class="btn" data-act="domove" data-dir="${dir}">Move money</button>`, { label: 'Move money' });
+  sizeAmount(document.getElementById('mv-amt'));
 }
 function openChallenges() {
   openSheet(`<div class="between"><button class="iconbtn" data-act="close" aria-label="Close">${svg('close')}</button><b>Pick challenges</b><span style="width:44px"></span></div>
@@ -1036,6 +1039,7 @@ function shareText(t) { if (navigator.share) navigator.share({ text: t }).catch(
 
 document.addEventListener('input', e => {
   const el = e.target;
+  if (el.classList.contains('amount-in')) sizeAmount(el);
   if (el.dataset.draft && draft) {
     draft[el.dataset.draft] = el.value;
     if (el.dataset.draft === 'amount' || el.dataset.draft === 'date') { const fn = document.getElementById('fund-note'); if (fn) fn.innerHTML = fundNoteText(); }
@@ -1076,16 +1080,11 @@ function maybeMonthStart() {
 }
 function afterUnlock() { render(); maybeMonthStart(); checkNewBadges(); }
 function fitScreen() {
-  // iPhone home-screen apps that draw under the Dynamic Island can report a screen that is too short.
-  // Measure the missing strip and let the layout stretch over it.
-  let g = 0;
-  if (window.navigator.standalone === true) {
-    const full = Math.max(screen.height, screen.width) > innerHeight && innerWidth < innerHeight ? Math.max(screen.height, screen.width) : innerHeight;
-    g = Math.max(0, Math.round(full - innerHeight));
-    if (g > 140) g = 0;
-  }
-  document.documentElement.style.setProperty('--gap', g + 'px');
+  // iPhone home-screen apps drawn under the Dynamic Island place fixed layers too high by the status-bar height.
+  // The ios-app class shifts the wallpaper, menu bar and panels back into place (see --gap in style.css).
+  document.documentElement.classList.toggle('ios-app', window.navigator.standalone === true);
 }
+function sizeAmount(el) { if (el) el.style.width = Math.max(1, (el.value || el.placeholder || '0').length) * 0.62 + 0.25 + 'em'; }
 function start() {
   fitScreen(); addEventListener('resize', fitScreen); addEventListener('orientationchange', () => setTimeout(fitScreen, 300));
   load(); render();
